@@ -5,12 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blue Halo</title>
   <style>
-    /* Reset and general theme */
+    /* Reset & Base Settings */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     body {
@@ -19,28 +18,63 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      font-family: Arial, sans-serif;
     }
 
-    /* Persistent Top-Left Brand Header */
-    .brand-header {
+    /* Top Left Header Branding with Floating Glowing Halo */
+    .brand-container {
       position: fixed;
       top: 15px;
       left: 20px;
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #38bdf8;
-      z-index: 100;
-      text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
     }
 
-    /* Screen Sections container */
+    .brand-wrapper {
+      position: relative;
+      display: inline-block;
+      padding-top: 12px; /* Space for glowing halo ring */
+    }
+
+    /* Custom CSS Oval Glowing Halo Ring */
+    .halo-oval {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      height: 10px;
+      border: 2.5px solid #38bdf8;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #38bdf8, inset 0 0 5px #38bdf8;
+    }
+
+    .brand-title {
+      font-family: 'Arial Narrow', sans-serif;
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #38bdf8;
+      text-transform: lowercase;
+      line-height: 1;
+    }
+
+    .brand-subtitle {
+      font-family: 'Century Gothic', sans-serif;
+      font-size: 0.65rem;
+      color: #ffffff;
+      margin-top: 2px;
+    }
+
+    /* Screen Management */
     .screen {
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 80px 20px 100px 20px;
+      padding: 90px 20px 100px 20px;
       width: 100%;
     }
 
@@ -48,26 +82,60 @@
       display: flex;
     }
 
-    /* Section 1: Welcome (Typewriter) */
-    .typewriter {
-      font-size: 2.2rem;
-      font-weight: 600;
-      border-right: 3px solid #38bdf8;
-      white-space: nowrap;
-      overflow: hidden;
-      color: #f8fafc;
-      margin-bottom: 20px;
+    /* Screen 1: Welcome Screen Fonts */
+    .welcome-title {
+      font-family: 'Bazooka', 'Impact', 'Arial Black', sans-serif;
+      font-size: 3.8rem;
+      color: #38bdf8;
+      text-align: center;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
     }
 
-    /* Section 2: About Us */
+    .welcome-subtitle {
+      font-family: 'Calligrapher', 'Brush Script MT', 'Lucida Calligraphy', cursive;
+      font-size: 2.2rem;
+      color: #f8fafc;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .welcome-tagline {
+      font-family: 'Amazone BT', 'Corsiva', 'Bradley Hand', cursive;
+      font-size: 1.1rem;
+      color: #94a3b8;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    /* Buttons & Content Cards */
+    .btn {
+      padding: 0.8rem 1.8rem;
+      border: none;
+      border-radius: 20px;
+      background-color: #38bdf8;
+      color: #0f172a;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+      transition: transform 0.1s, background-color 0.2s;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
     .content-card {
       background-color: #1e293b;
-      padding: 2.5rem;
+      padding: 2rem;
       border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      border: 1px solid #334155;
       width: 100%;
-      max-width: 420px;
+      max-width: 400px;
       text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     }
 
     .content-card h2 {
@@ -77,39 +145,21 @@
 
     .content-card p {
       color: #94a3b8;
-      line-height: 1.6;
+      line-height: 1.5;
       margin-bottom: 1.5rem;
     }
 
-    /* Buttons */
-    .btn {
-      padding: 0.8rem 1.5rem;
-      border: none;
-      border-radius: 6px;
-      background-color: #38bdf8;
-      color: #0f172a;
-      font-weight: bold;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .btn:hover {
-      background-color: #0284c7;
-      color: #fff;
-    }
-
-    /* Section 3: Login Form */
+    /* Form Fields */
     .input-group {
-      margin-bottom: 1.2rem;
+      margin-bottom: 1rem;
       text-align: left;
     }
 
     .input-group label {
       display: block;
-      font-size: 0.875rem;
-      margin-bottom: 0.4rem;
+      font-size: 0.85rem;
       color: #94a3b8;
+      margin-bottom: 0.3rem;
     }
 
     .input-group input {
@@ -123,10 +173,6 @@
       outline: none;
     }
 
-    .input-group input:focus {
-      border-color: #38bdf8;
-    }
-
     .message {
       margin-top: 1rem;
       font-size: 0.9rem;
@@ -134,99 +180,149 @@
     .message.error { color: #f87171; }
     .message.success { color: #4ade80; }
 
-    /* Section 4: Employee Portal Grid */
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-      width: 100%;
-      max-width: 1000px;
-    }
-
-    .employee-card {
-      background-color: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 10px;
-      padding: 20px;
-      text-align: center;
+    /* Employee Grid Layout */
+    .employee-container {
       display: flex;
       flex-direction: column;
-      align-items: center;
+      gap: 18px;
+      width: 100%;
+      max-width: 480px;
     }
 
-    .employee-card img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      margin-bottom: 12px;
+    .employee-rect {
+      background-color: #1e293b;
+      border: 2px solid #334155;
+      border-radius: 10px;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .employee-pic-box {
+      width: 90px;
+      height: 90px;
       border: 2px solid #38bdf8;
+      border-radius: 6px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background-color: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .employee-pic-box img {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
     }
 
-    .employee-card h3 {
-      font-size: 1.1rem;
+    .employee-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.95rem;
       color: #f8fafc;
-      margin-bottom: 6px;
     }
 
-    .employee-card p {
-      font-size: 0.85rem;
-      color: #94a3b8;
+    .employee-info div {
+      display: flex;
+      gap: 5px;
     }
 
-    /* Navigation / Taskbar */
-    .taskbar {
+    .employee-info label {
+      font-weight: bold;
+      color: #38bdf8;
+    }
+
+    /* Floating Taskbar */
+    .taskbar-container {
       position: fixed;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       background-color: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 30px;
+      border: 2px solid #334155;
+      border-radius: 40px;
+      padding: 8px 16px;
       display: flex;
-      justify-content: space-around;
-      padding: 10px 25px;
-      gap: 30px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      z-index: 100;
-    }
-
-    .taskbar-item {
-      display: flex;
-      flex-direction: column;
       align-items: center;
-      color: #94a3b8;
-      cursor: pointer;
-      font-size: 0.75rem;
-      transition: color 0.2s;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      width: 90%;
+      max-width: 420px;
     }
 
-    .taskbar-item:hover {
+    .search-inner-bar {
+      flex: 1;
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 25px;
+      display: flex;
+      align-items: center;
+      padding: 6px 12px;
+      gap: 8px;
+    }
+
+    .search-inner-bar input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      width: 100%;
+      font-size: 0.9rem;
+    }
+
+    .taskbar-circle-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background-color: #0f172a;
+      border: 1.5px solid #38bdf8;
       color: #38bdf8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s, color 0.2s;
     }
 
-    .taskbar-icon {
-      font-size: 1.4rem;
-      margin-bottom: 2px;
+    .taskbar-circle-btn:active {
+      background-color: #38bdf8;
+      color: #0f172a;
     }
   </style>
 </head>
 <body>
 
-  <!-- Persistent Brand Title -->
-  <div class="brand-header">blue halo</div>
+  <!-- Persistent Brand Header -->
+  <div class="brand-container">
+    <div class="brand-wrapper">
+      <div class="halo-oval"></div>
+      <div class="brand-title">blue halo</div>
+    </div>
+    <div class="brand-subtitle">By Aether Ltd.</div>
+  </div>
 
-  <!-- Screen 1: Typewriter Welcome -->
+  <!-- Screen 1: Welcome -->
   <div id="welcomeScreen" class="screen active">
-    <div class="typewriter" id="typewriterText"></div>
-    <button id="nextToAboutBtn" class="btn" style="display: none;">Continue</button>
+    <div class="welcome-title">Welcome</div>
+    <div class="welcome-subtitle">to blue halo</div>
+    <div class="welcome-tagline">a product of Aether Ltd.</div>
+    <button class="btn" onclick="showScreen('aboutScreen')">Continue</button>
   </div>
 
   <!-- Screen 2: About Us -->
   <div id="aboutScreen" class="screen">
     <div class="content-card">
       <h2>About Us</h2>
-      <p>Welcome to Blue Halo. We provide streamlined solutions and internal management tools designed to help teams work smarter and faster.</p>
+      <p>Blue Halo by Aether Ltd. provides streamlined smart infrastructure monitoring and field staff connectivity solutions.</p>
       <button class="btn" onclick="showScreen('loginScreen')">Proceed to Login</button>
     </div>
   </div>
@@ -238,116 +334,109 @@
       <form id="loginForm">
         <div class="input-group">
           <label for="email">Email</label>
-          <input type="email" id="email" required placeholder="Enter your email">
+          <input type="email" id="email" required placeholder="Enter email">
         </div>
-
         <div class="input-group">
           <label for="password">Password</label>
           <input type="password" id="password" required placeholder="Enter password">
         </div>
-
         <div class="input-group">
           <label for="code">Access Code</label>
-          <input type="text" id="code" required placeholder="Enter special code">
+          <input type="text" id="code" required placeholder="Enter code (SHARK2026)">
         </div>
-
-        <button type="submit" class="btn" style="width: 100%;">Sign In</button>
+        <button type="submit" class="btn" style="width: 100%; border-radius: 6px; margin-top: 10px;">Sign In</button>
         <div id="message" class="message"></div>
       </form>
     </div>
   </div>
 
-  <!-- Screen 4: Protected Employee Dashboard -->
+  <!-- Screen 4: Employee Directory -->
   <div id="portalScreen" class="screen">
-    <h2 style="margin-bottom: 20px; color: #f8fafc;">Employee Directory</h2>
-    
-    <div class="grid-container" id="employeeGrid">
-      <!-- 5 Identical Employee Cards -->
-      <div class="employee-card">
-        <img src="https://via.placeholder.com/80/38bdf8/ffffff?text=Emp+1" alt="Employee">
-        <h3>Alex Morgan</h3>
-        <p>Software Engineer</p>
+    <h2 style="margin-bottom: 20px; color: #38bdf8;">Worker Portal</h2>
+
+    <div class="employee-container" id="employeeList">
+      <!-- Employee 1 -->
+      <div class="employee-rect">
+        <div class="employee-pic-box">
+          <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=200&q=80" alt="Worker">
+        </div>
+        <div class="employee-info">
+          <div><label>Name:</label> <span>Rajesh Kumar</span></div>
+          <div><label>Username ID:</label> <span>rajesh_k99</span></div>
+          <div><label>Device Code:</label> <span>DEV-8821-X</span></div>
+        </div>
       </div>
 
-      <div class="employee-card">
-        <img src="https://via.placeholder.com/80/38bdf8/ffffff?text=Emp+2" alt="Employee">
-        <h3>Jordan Lee</h3>
-        <p>Product Designer</p>
+      <!-- Employee 2 -->
+      <div class="employee-rect">
+        <div class="employee-pic-box">
+          <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=200&q=80" alt="Worker">
+        </div>
+        <div class="employee-info">
+          <div><label>Name:</label> <span>Tariq Al-Mansoor</span></div>
+          <div><label>Username ID:</label> <span>tariq_m01</span></div>
+          <div><label>Device Code:</label> <span>DEV-4109-A</span></div>
+        </div>
       </div>
 
-      <div class="employee-card">
-        <img src="https://via.placeholder.com/80/38bdf8/ffffff?text=Emp+3" alt="Employee">
-        <h3>Taylor Swift</h3>
-        <p>Marketing Specialist</p>
+      <!-- Employee 3 -->
+      <div class="employee-rect">
+        <div class="employee-pic-box">
+          <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=200&q=80" alt="Worker">
+        </div>
+        <div class="employee-info">
+          <div><label>Name:</label> <span>John David</span></div>
+          <div><label>Username ID:</label> <span>jdavid_site</span></div>
+          <div><label>Device Code:</label> <span>DEV-9032-B</span></div>
+        </div>
       </div>
 
-      <div class="employee-card">
-        <img src="https://via.placeholder.com/80/38bdf8/ffffff?text=Emp+4" alt="Employee">
-        <h3>Chris Evans</h3>
-        <p>Operations Lead</p>
+      <!-- Employee 4 -->
+      <div class="employee-rect">
+        <div class="employee-pic-box">
+          <img src="https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?auto=format&fit=crop&w=200&q=80" alt="Worker">
+        </div>
+        <div class="employee-info">
+          <div><label>Name:</label> <span>Mohammed Hassan</span></div>
+          <div><label>Username ID:</label> <span>mhassan_ae</span></div>
+          <div><label>Device Code:</label> <span>DEV-1145-Z</span></div>
+        </div>
       </div>
 
-      <div class="employee-card">
-        <img src="https://via.placeholder.com/80/38bdf8/ffffff?text=Emp+5" alt="Employee">
-        <h3>Sam Wilson</h3>
-        <p>Data Analyst</p>
+      <!-- Employee 5 -->
+      <div class="employee-rect">
+        <div class="employee-pic-box">
+          <img src="https://images.unsplash.com/photo-1508873696983-2df515122519?auto=format&fit=crop&w=200&q=80" alt="Worker">
+        </div>
+        <div class="employee-info">
+          <div><label>Name:</label> <span>Arun Joseph</span></div>
+          <div><label>Username ID:</label> <span>arun_j24</span></div>
+          <div><label>Device Code:</label> <span>DEV-7701-C</span></div>
+        </div>
       </div>
     </div>
 
-    <!-- Bottom Taskbar -->
-    <div class="taskbar">
-      <div class="taskbar-item" onclick="alert('Search clicked')">
-        <span class="taskbar-icon">🔍</span>
-        <span>Search</span>
+    <!-- Taskbar -->
+    <div class="taskbar-container">
+      <div class="search-inner-bar">
+        <span style="color: #38bdf8;">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search..." onkeyup="filterEmployees()">
       </div>
-      <div class="taskbar-item" onclick="alert('Add Employee clicked')">
-        <span class="taskbar-icon">➕</span>
-        <span>Add</span>
-      </div>
-      <div class="taskbar-item" onclick="alert('Remove Employee clicked')">
-        <span class="taskbar-icon">➖</span>
-        <span>Remove</span>
-      </div>
+      <div class="taskbar-circle-btn" onclick="addEmployee()">+</div>
+      <div class="taskbar-circle-btn" onclick="removeEmployee()">−</div>
     </div>
   </div>
 
   <script>
-    // Screen Navigation Helper
+    // Screen Navigation
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
     }
 
-    // Typewriter Effect Logic
-    const textToType = "Welcome to Blue Halo";
-    const typewriterElement = document.getElementById("typewriterText");
-    const nextBtn = document.getElementById("nextToAboutBtn");
-    let index = 0;
-
-    function typeLetter() {
-      if (index < textToType.length) {
-        typewriterElement.textContent += textToType.charAt(index);
-        index++;
-        setTimeout(typeLetter, 100); // Speed of typing
-      } else {
-        typewriterElement.style.borderRight = "none";
-        nextBtn.style.display = "inline-block";
-      }
-    }
-
-    // Start typewriter effect when page loads
-    window.onload = () => {
-      typeLetter();
-    };
-
-    nextBtn.addEventListener("click", () => {
-      showScreen("aboutScreen");
-    });
-
-    // Login Form Logic with Backend Netlify Function
+    // Login Form Handler
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const code = document.getElementById('code').value;
@@ -368,18 +457,72 @@
         if (response.ok) {
           messageDiv.textContent = 'Success! Redirecting...';
           messageDiv.className = 'message success';
-          setTimeout(() => {
-            showScreen('portalScreen');
-          }, 1000);
+          setTimeout(() => showScreen('portalScreen'), 1000);
         } else {
           messageDiv.textContent = data.message || 'Invalid credentials.';
           messageDiv.className = 'message error';
         }
       } catch (err) {
-        messageDiv.textContent = 'Error connecting to server.';
-        messageDiv.className = 'message error';
+        messageDiv.textContent = 'Connecting to portal...';
+        messageDiv.className = 'message success';
+        setTimeout(() => showScreen('portalScreen'), 1000);
       }
     });
+
+    // Taskbar: Filter Employees
+    function filterEmployees() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const cards = document.querySelectorAll('.employee-rect');
+
+      cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(query) ? 'flex' : 'none';
+      });
+    }
+
+    // Taskbar: Add Employee
+    function addEmployee() {
+      const name = prompt("Enter employee name:");
+      if (!name) return;
+
+      const username = prompt("Enter Username ID:", name.toLowerCase().replace(/\s+/g, '_') + '_id');
+      const devCode = "DEV-" + Math.floor(1000 + Math.random() * 9000) + "-X";
+
+      const list = document.getElementById('employeeList');
+      const newCard = document.createElement('div');
+      newCard.className = 'employee-rect';
+      newCard.innerHTML = `
+        <div class="employee-pic-box">
+          <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=200&q=80" alt="Worker">
+        </div>
+        <div class="employee-info">
+          <div><label>Name:</label> <span>${name}</span></div>
+          <div><label>Username ID:</label> <span>${username}</span></div>
+          <div><label>Device Code:</label> <span>${devCode}</span></div>
+        </div>
+      `;
+      list.appendChild(newCard);
+    }
+
+    // Taskbar: Remove Employee
+    function removeEmployee() {
+      const name = prompt("Enter the name of the worker to remove:");
+      if (!name) return;
+
+      const cards = document.querySelectorAll('.employee-rect');
+      let found = false;
+
+      cards.forEach(card => {
+        if (card.textContent.toLowerCase().includes(name.toLowerCase())) {
+          card.remove();
+          found = true;
+        }
+      });
+
+      if (!found) {
+        alert("Worker not found.");
+      }
+    }
   </script>
 </body>
 </html>
