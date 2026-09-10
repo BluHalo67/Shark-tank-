@@ -177,7 +177,7 @@
       outline: none;
     }
 
-    /* Visual Divider between Login methods */
+    /* Visual Divider */
     .divider {
       display: flex;
       align-items: center;
@@ -363,10 +363,10 @@
     <div class="content-card">
       <h2>Portal Login</h2>
       
-      <!-- Option A: Google Sign In -->
+      <!-- Option 1: Google Sign In -->
       <div class="google-btn-wrapper">
         <div id="g_id_onload"
-             data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+             data-client_id="352439208859-osm3diqimkqk4fklu5eg89jrhlvq45lk.apps.googleusercontent.com"
              data-callback="handleCredentialResponse"
              data-auto_prompt="false">
         </div>
@@ -382,7 +382,7 @@
 
       <div class="divider"><span>or sign in with credentials</span></div>
 
-      <!-- Option B: Normal Form Login -->
+      <!-- Option 2: Normal Form Login -->
       <form id="loginForm">
         <div class="input-group">
           <label for="email">Authorized Email</label>
@@ -447,7 +447,7 @@
       <!-- 4. Mohammad Hasan -->
       <div class="employee-rect">
         <div class="employee-pic-box">
-          <img src="Hasan.jpg" alt="Mohammad Hasan">
+          <img src="hasan.jpg" alt="Mohammad Hasan">
         </div>
         <div class="employee-info">
           <div><label>Name:</label> <span>Mohammad Hasan</span></div>
@@ -481,9 +481,7 @@
   </div>
 
   <script>
-    // ==========================================
-    // AUTHORIZED EMAIL LIST
-    // ==========================================
+    // ONLY THESE 3 EMAILS ARE ALLOWED
     const ALLOWED_EMAILS = [
       "ameenas310522@gmail.com",
       "lubna4b@gmail.com",
@@ -506,7 +504,7 @@
       return JSON.parse(jsonPayload);
     }
 
-    // Google Sign-In Handler
+    // Google Sign-In Callback Handler
     function handleCredentialResponse(response) {
       const messageDiv = document.getElementById('message');
       
@@ -514,6 +512,7 @@
         const userData = parseJwt(response.credential);
         const userEmail = userData.email.toLowerCase();
 
+        // Check if the Google email matches one of the 3 allowed emails
         const isAllowed = ALLOWED_EMAILS.some(email => email.toLowerCase() === userEmail);
 
         if (isAllowed) {
@@ -525,7 +524,7 @@
           messageDiv.className = 'message error';
         }
       } catch (err) {
-        messageDiv.textContent = 'Error verifying Google login.';
+        messageDiv.textContent = 'Error verifying Google login credentials.';
         messageDiv.className = 'message error';
       }
     }
@@ -537,10 +536,11 @@
       const code = document.getElementById('code').value.trim();
       const messageDiv = document.getElementById('message');
 
+      // Strict validation: check if entered email is in the allowed list
       const isEmailAllowed = ALLOWED_EMAILS.some(allowed => allowed.toLowerCase() === email);
 
       if (!isEmailAllowed) {
-        messageDiv.textContent = `Access Denied: Email is not authorized.`;
+        messageDiv.textContent = 'Access Denied: Your email is not authorized.';
         messageDiv.className = 'message error';
       } else if (code !== 'SHARK2026') {
         messageDiv.textContent = 'Invalid Access Code. Use SHARK2026.';
