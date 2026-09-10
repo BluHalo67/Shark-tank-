@@ -3,35 +3,348 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Exclusive Access</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Blue Halo</title>
+  <style>
+    /* Reset and general theme */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #0f172a;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Persistent Top-Left Brand Header */
+    .brand-header {
+      position: fixed;
+      top: 15px;
+      left: 20px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #38bdf8;
+      z-index: 100;
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    }
+
+    /* Screen Sections container */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 80px 20px 100px 20px;
+      width: 100%;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* Section 1: Welcome (Typewriter) */
+    .typewriter {
+      font-size: 2.2rem;
+      font-weight: 600;
+      border-right: 3px solid #38bdf8;
+      white-space: nowrap;
+      overflow: hidden;
+      color: #f8fafc;
+      margin-bottom: 20px;
+    }
+
+    /* Section 2: About Us */
+    .content-card {
+      background-color: #1e293b;
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+
+    .content-card h2 {
+      color: #38bdf8;
+      margin-bottom: 1rem;
+    }
+
+    .content-card p {
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      background-color: #38bdf8;
+      color: #0f172a;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn:hover {
+      background-color: #0284c7;
+      color: #fff;
+    }
+
+    /* Section 3: Login Form */
+    .input-group {
+      margin-bottom: 1.2rem;
+      text-align: left;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.875rem;
+      margin-bottom: 0.4rem;
+      color: #94a3b8;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background-color: #0f172a;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .input-group input:focus {
+      border-color: #38bdf8;
+    }
+
+    .message {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    .message.error { color: #f87171; }
+    .message.success { color: #4ade80; }
+
+    /* Section 4: Employee Portal Grid */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .employee-card {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .employee-card img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin-bottom: 12px;
+      border: 2px solid #38bdf8;
+      object-fit: cover;
+    }
+
+    .employee-card h3 {
+      font-size: 1.1rem;
+      color: #f8fafc;
+      margin-bottom: 6px;
+    }
+
+    .employee-card p {
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+
+    /* Navigation / Taskbar */
+    .taskbar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 30px;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 25px;
+      gap: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      z-index: 100;
+    }
+
+    .taskbar-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: color 0.2s;
+    }
+
+    .taskbar-item:hover {
+      color: #38bdf8;
+    }
+
+    .taskbar-icon {
+      font-size: 1.4rem;
+      margin-bottom: 2px;
+    }
+  </style>
 </head>
 <body>
 
-  <div class="login-card">
-    <h2>Portal Access</h2>
-    <form id="loginForm">
-      <div class="input-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" required placeholder="Enter your email">
+  <!-- Persistent Brand Title -->
+  <div class="brand-header">blue halo</div>
+
+  <!-- Screen 1: Typewriter Welcome -->
+  <div id="welcomeScreen" class="screen active">
+    <div class="typewriter" id="typewriterText"></div>
+    <button id="nextToAboutBtn" class="btn" style="display: none;">Continue</button>
+  </div>
+
+  <!-- Screen 2: About Us -->
+  <div id="aboutScreen" class="screen">
+    <div class="content-card">
+      <h2>About Us</h2>
+      <p>Welcome to Blue Halo. We provide streamlined solutions and internal management tools designed to help teams work smarter and faster.</p>
+      <button class="btn" onclick="showScreen('loginScreen')">Proceed to Login</button>
+    </div>
+  </div>
+
+  <!-- Screen 3: Login Page -->
+  <div id="loginScreen" class="screen">
+    <div class="content-card">
+      <h2>Portal Login</h2>
+      <form id="loginForm">
+        <div class="input-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" required placeholder="Enter your email">
+        </div>
+
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" required placeholder="Enter password">
+        </div>
+
+        <div class="input-group">
+          <label for="code">Access Code</label>
+          <input type="text" id="code" required placeholder="Enter special code">
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%;">Sign In</button>
+        <div id="message" class="message"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Screen 4: Protected Employee Dashboard -->
+  <div id="portalScreen" class="screen">
+    <h2 style="margin-bottom: 20px; color: #f8fafc;">Employee Directory</h2>
+    
+    <div class="grid-container" id="employeeGrid">
+      <!-- 5 Identical Employee Cards -->
+      <div class="employee-card">
+        <img src="https://via.placeholder.com/80/38bdf8/ffffff?text=Emp+1" alt="Employee">
+        <h3>Alex Morgan</h3>
+        <p>Software Engineer</p>
       </div>
 
-      <div class="input-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" required placeholder="Enter your password">
+      <div class="employee-card">
+        <img src="https://via.placeholder.com/80/38bdf8/ffffff?text=Emp+2" alt="Employee">
+        <h3>Jordan Lee</h3>
+        <p>Product Designer</p>
       </div>
 
-      <div class="input-group">
-        <label for="code">Access Code</label>
-        <input type="text" id="code" required placeholder="Enter special code">
+      <div class="employee-card">
+        <img src="https://via.placeholder.com/80/38bdf8/ffffff?text=Emp+3" alt="Employee">
+        <h3>Taylor Swift</h3>
+        <p>Marketing Specialist</p>
       </div>
 
-      <button type="submit" id="submitBtn">Sign In</button>
-      <div id="message" class="message"></div>
-    </form>
+      <div class="employee-card">
+        <img src="https://via.placeholder.com/80/38bdf8/ffffff?text=Emp+4" alt="Employee">
+        <h3>Chris Evans</h3>
+        <p>Operations Lead</p>
+      </div>
+
+      <div class="employee-card">
+        <img src="https://via.placeholder.com/80/38bdf8/ffffff?text=Emp+5" alt="Employee">
+        <h3>Sam Wilson</h3>
+        <p>Data Analyst</p>
+      </div>
+    </div>
+
+    <!-- Bottom Taskbar -->
+    <div class="taskbar">
+      <div class="taskbar-item" onclick="alert('Search clicked')">
+        <span class="taskbar-icon">🔍</span>
+        <span>Search</span>
+      </div>
+      <div class="taskbar-item" onclick="alert('Add Employee clicked')">
+        <span class="taskbar-icon">➕</span>
+        <span>Add</span>
+      </div>
+      <div class="taskbar-item" onclick="alert('Remove Employee clicked')">
+        <span class="taskbar-icon">➖</span>
+        <span>Remove</span>
+      </div>
+    </div>
   </div>
 
   <script>
+    // Screen Navigation Helper
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+    }
+
+    // Typewriter Effect Logic
+    const textToType = "Welcome to Blue Halo";
+    const typewriterElement = document.getElementById("typewriterText");
+    const nextBtn = document.getElementById("nextToAboutBtn");
+    let index = 0;
+
+    function typeLetter() {
+      if (index < textToType.length) {
+        typewriterElement.textContent += textToType.charAt(index);
+        index++;
+        setTimeout(typeLetter, 100); // Speed of typing
+      } else {
+        typewriterElement.style.borderRight = "none";
+        nextBtn.style.display = "inline-block";
+      }
+    }
+
+    // Start typewriter effect when page loads
+    window.onload = () => {
+      typeLetter();
+    };
+
+    nextBtn.addEventListener("click", () => {
+      showScreen("aboutScreen");
+    });
+
+    // Login Form Logic with Backend Netlify Function
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -44,7 +357,6 @@
       messageDiv.className = 'message';
 
       try {
-        // Send request to serverless backend function
         const response = await fetch('/.netlify/functions/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -56,10 +368,9 @@
         if (response.ok) {
           messageDiv.textContent = 'Success! Redirecting...';
           messageDiv.className = 'message success';
-          // Save authorization token/session if needed, then redirect
           setTimeout(() => {
-            window.location.href = '/dashboard.html'; // Replace with your protected page
-          }, 1500);
+            showScreen('portalScreen');
+          }, 1000);
         } else {
           messageDiv.textContent = data.message || 'Invalid credentials.';
           messageDiv.className = 'message error';
