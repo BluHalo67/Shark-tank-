@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Exclusive Access</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="login-card">
+    <h2>Portal Access</h2>
+    <form id="loginForm">
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required placeholder="Enter your email">
+      </div>
+
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required placeholder="Enter your password">
+      </div>
+
+      <div class="input-group">
+        <label for="code">Access Code</label>
+        <input type="text" id="code" required placeholder="Enter special code">
+      </div>
+
+      <button type="submit" id="submitBtn">Sign In</button>
+      <div id="message" class="message"></div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const code = document.getElementById('code').value;
+      const messageDiv = document.getElementById('message');
+
+      messageDiv.textContent = 'Verifying...';
+      messageDiv.className = 'message';
+
+      try {
+        // Send request to serverless backend function
+        const response = await fetch('/.netlify/functions/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, code })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          messageDiv.textContent = 'Success! Redirecting...';
+          messageDiv.className = 'message success';
+          // Save authorization token/session if needed, then redirect
+          setTimeout(() => {
+            window.location.href = '/dashboard.html'; // Replace with your protected page
+          }, 1500);
+        } else {
+          messageDiv.textContent = data.message || 'Invalid credentials.';
+          messageDiv.className = 'message error';
+        }
+      } catch (err) {
+        messageDiv.textContent = 'Error connecting to server.';
+        messageDiv.className = 'message error';
+      }
+    });
+  </script>
+</body>
+</html>
