@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blue Halo</title>
+  
+  <!-- Official Google Sign-In SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
   <style>
     /* Reset & Base Settings */
     * {
@@ -173,6 +177,33 @@
       outline: none;
     }
 
+    /* Visual Divider between Login methods */
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.8rem;
+      margin: 18px 0;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #334155;
+    }
+
+    .divider span {
+      padding: 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .google-btn-wrapper {
+      display: flex;
+      justify-content: center;
+    }
+
     .message {
       margin-top: 1rem;
       font-size: 0.9rem;
@@ -327,14 +358,35 @@
     </div>
   </div>
 
-  <!-- Screen 3: Login Page -->
+  <!-- Screen 3: Combined Login Page -->
   <div id="loginScreen" class="screen">
     <div class="content-card">
       <h2>Portal Login</h2>
+      
+      <!-- Option A: Google Sign In -->
+      <div class="google-btn-wrapper">
+        <div id="g_id_onload"
+             data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+             data-callback="handleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin"
+             data-type="standard"
+             data-size="large"
+             data-theme="outline"
+             data-text="sign_in_with"
+             data-shape="pill"
+             data-logo_alignment="left">
+        </div>
+      </div>
+
+      <div class="divider"><span>or sign in with credentials</span></div>
+
+      <!-- Option B: Normal Form Login -->
       <form id="loginForm">
         <div class="input-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" required placeholder="Enter email">
+          <label for="email">Authorized Email</label>
+          <input type="email" id="email" required placeholder="Enter your email">
         </div>
         <div class="input-group">
           <label for="password">Password</label>
@@ -345,8 +397,9 @@
           <input type="text" id="code" required placeholder="Enter code (SHARK2026)">
         </div>
         <button type="submit" class="btn" style="width: 100%; border-radius: 6px; margin-top: 10px;">Sign In</button>
-        <div id="message" class="message"></div>
       </form>
+
+      <div id="message" class="message"></div>
     </div>
   </div>
 
@@ -428,42 +481,72 @@
   </div>
 
   <script>
+    // ==========================================
+    // AUTHORIZED EMAIL LIST
+    // ==========================================
+    const ALLOWED_EMAILS = [
+      "ameenas310522@gmail.com",
+      "lubna4b@gmail.com",
+      "67sharktank@gmail.com"
+    ];
+
     // Screen Navigation
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
     }
 
-    // Login Form Handler
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const code = document.getElementById('code').value;
+    // Decode Google JWT Token
+    function parseJwt(token) {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    }
+
+    // Google Sign-In Handler
+    function handleCredentialResponse(response) {
       const messageDiv = document.getElementById('message');
-
-      messageDiv.textContent = 'Verifying...';
-      messageDiv.className = 'message';
-
+      
       try {
-        const response = await fetch('/.netlify/functions/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, code })
-        });
+        const userData = parseJwt(response.credential);
+        const userEmail = userData.email.toLowerCase();
 
-        const data = await response.json();
+        const isAllowed = ALLOWED_EMAILS.some(email => email.toLowerCase() === userEmail);
 
-        if (response.ok) {
-          messageDiv.textContent = 'Success! Redirecting...';
+        if (isAllowed) {
+          messageDiv.textContent = `Welcome ${userData.name}! Redirecting...`;
           messageDiv.className = 'message success';
           setTimeout(() => showScreen('portalScreen'), 1000);
         } else {
-          messageDiv.textContent = data.message || 'Invalid credentials.';
+          messageDiv.textContent = `Access Denied: (${userEmail}) is not authorized.`;
           messageDiv.className = 'message error';
         }
       } catch (err) {
-        messageDiv.textContent = 'Connecting to portal...';
+        messageDiv.textContent = 'Error verifying Google login.';
+        messageDiv.className = 'message error';
+      }
+    }
+
+    // Normal Form Sign-In Handler
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const code = document.getElementById('code').value.trim();
+      const messageDiv = document.getElementById('message');
+
+      const isEmailAllowed = ALLOWED_EMAILS.some(allowed => allowed.toLowerCase() === email);
+
+      if (!isEmailAllowed) {
+        messageDiv.textContent = `Access Denied: Email is not authorized.`;
+        messageDiv.className = 'message error';
+      } else if (code !== 'SHARK2026') {
+        messageDiv.textContent = 'Invalid Access Code. Use SHARK2026.';
+        messageDiv.className = 'message error';
+      } else {
+        messageDiv.textContent = 'Success! Redirecting...';
         messageDiv.className = 'message success';
         setTimeout(() => showScreen('portalScreen'), 1000);
       }
