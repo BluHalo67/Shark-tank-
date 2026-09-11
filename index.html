@@ -341,6 +341,9 @@
     <div class="brand-subtitle">By Aether Ltd.</div>
   </div>
 
+  <!-- Hidden File Input for Image Upload -->
+  <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
+
   <!-- Screen 1: Welcome -->
   <div id="welcomeScreen" class="screen active">
     <div class="welcome-title">Welcome</div>
@@ -407,67 +410,7 @@
   <div id="portalScreen" class="screen">
     <h2 style="margin-bottom: 20px; color: #38bdf8;">Worker Portal</h2>
 
-    <div class="employee-container" id="employeeList">
-      <!-- 1. Rajesh Kumar -->
-      <div class="employee-rect">
-        <div class="employee-pic-box">
-          <img src="rajesh.jpg" alt="Rajesh Kumar">
-        </div>
-        <div class="employee-info">
-          <div><label>Name:</label> <span>Rajesh Kumar</span></div>
-          <div><label>Username ID:</label> <span>rajesh_k99</span></div>
-          <div><label>Device Code:</label> <span>DEV-8821-X</span></div>
-        </div>
-      </div>
-
-      <!-- 2. Tariq Al Mansoor -->
-      <div class="employee-rect">
-        <div class="employee-pic-box">
-          <img src="tariq.jpg" alt="Tariq Al Mansoor">
-        </div>
-        <div class="employee-info">
-          <div><label>Name:</label> <span>Tariq Al Mansoor</span></div>
-          <div><label>Username ID:</label> <span>tariq_m01</span></div>
-          <div><label>Device Code:</label> <span>DEV-4109-A</span></div>
-        </div>
-      </div>
-
-      <!-- 3. John David -->
-      <div class="employee-rect">
-        <div class="employee-pic-box">
-          <img src="john.jpg" alt="John David">
-        </div>
-        <div class="employee-info">
-          <div><label>Name:</label> <span>John David</span></div>
-          <div><label>Username ID:</label> <span>jdavid_site</span></div>
-          <div><label>Device Code:</label> <span>DEV-9032-B</span></div>
-        </div>
-      </div>
-
-      <!-- 4. Mohammad Hasan -->
-      <div class="employee-rect">
-        <div class="employee-pic-box">
-          <img src="Hasan.jpg" alt="Mohammad Hasan">
-        </div>
-        <div class="employee-info">
-          <div><label>Name:</label> <span>Mohammad Hasan</span></div>
-          <div><label>Username ID:</label> <span>mhasan_ae</span></div>
-          <div><label>Device Code:</label> <span>DEV-1145-Z</span></div>
-        </div>
-      </div>
-
-      <!-- 5. Arun Joseph -->
-      <div class="employee-rect">
-        <div class="employee-pic-box">
-          <img src="arun.jpg" alt="Arun Joseph">
-        </div>
-        <div class="employee-info">
-          <div><label>Name:</label> <span>Arun Joseph</span></div>
-          <div><label>Username ID:</label> <span>arun_j24</span></div>
-          <div><label>Device Code:</label> <span>DEV-7701-C</span></div>
-        </div>
-      </div>
-    </div>
+    <div class="employee-container" id="employeeList"></div>
 
     <!-- Taskbar -->
     <div class="taskbar-container">
@@ -481,20 +424,56 @@
   </div>
 
   <script>
-    // ONLY THESE 3 EMAILS ARE ALLOWED
     const ALLOWED_EMAILS = [
       "ameenas310522@gmail.com",
       "lubna4b@gmail.com",
       "67sharktank@gmail.com"
     ];
 
-    // Screen Navigation
+    const DEFAULT_EMPLOYEES = [
+      { name: "Rajesh Kumar", username: "rajesh_k99", devCode: "DEV-8821-X", image: "rajesh.jpg" },
+      { name: "Tariq Al Mansoor", username: "tariq_m01", devCode: "DEV-4109-A", image: "tariq.jpg" },
+      { name: "John David", username: "jdavid_site", devCode: "DEV-9032-B", image: "john.jpg" },
+      { name: "Mohammad Hasan", username: "mhasan_ae", devCode: "DEV-1145-Z", image: "hasan.jpg" },
+      { name: "Arun Joseph", username: "arun_j24", devCode: "DEV-7701-C", image: "arun.jpg" }
+    ];
+
+    function getEmployees() {
+      const stored = localStorage.getItem('blue_halo_employees');
+      return stored ? JSON.parse(stored) : DEFAULT_EMPLOYEES;
+    }
+
+    function saveEmployees(employees) {
+      localStorage.setItem('blue_halo_employees', JSON.stringify(employees));
+    }
+
+    function renderEmployees() {
+      const list = document.getElementById('employeeList');
+      const employees = getEmployees();
+      list.innerHTML = '';
+
+      employees.forEach(emp => {
+        const card = document.createElement('div');
+        card.className = 'employee-rect';
+        card.innerHTML = `
+          <div class="employee-pic-box">
+            <img src="${emp.image}" alt="${emp.name}" onerror="this.src='https://via.placeholder.com/90?text=User'">
+          </div>
+          <div class="employee-info">
+            <div><label>Name:</label> <span>${emp.name}</span></div>
+            <div><label>Username ID:</label> <span>${emp.username}</span></div>
+            <div><label>Device Code:</label> <span>${emp.devCode}</span></div>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
     }
 
-    // Decode Google JWT Token
     function parseJwt(token) {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -504,15 +483,11 @@
       return JSON.parse(jsonPayload);
     }
 
-    // Google Sign-In Callback Handler
     function handleCredentialResponse(response) {
       const messageDiv = document.getElementById('message');
-      
       try {
         const userData = parseJwt(response.credential);
         const userEmail = userData.email.toLowerCase();
-
-        // Check if the Google email matches one of the 3 allowed emails
         const isAllowed = ALLOWED_EMAILS.some(email => email.toLowerCase() === userEmail);
 
         if (isAllowed) {
@@ -529,14 +504,12 @@
       }
     }
 
-    // Normal Form Sign-In Handler
     document.getElementById('loginForm').addEventListener('submit', (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value.trim().toLowerCase();
       const code = document.getElementById('code').value.trim();
       const messageDiv = document.getElementById('message');
 
-      // Strict validation: check if entered email is in the allowed list
       const isEmailAllowed = ALLOWED_EMAILS.some(allowed => allowed.toLowerCase() === email);
 
       if (!isEmailAllowed) {
@@ -552,7 +525,6 @@
       }
     });
 
-    // Taskbar: Filter Employees
     function filterEmployees() {
       const query = document.getElementById('searchInput').value.toLowerCase();
       const cards = document.querySelectorAll('.employee-rect');
@@ -563,49 +535,68 @@
       });
     }
 
-    // Taskbar: Add Employee
     function addEmployee() {
       const name = prompt("Enter employee name:");
       if (!name) return;
 
       const username = prompt("Enter Username ID:", name.toLowerCase().replace(/\s+/g, '_') + '_id');
-      const devCode = "DEV-" + Math.floor(1000 + Math.random() * 9000) + "-X";
+      if (!username) return;
 
-      const list = document.getElementById('employeeList');
-      const newCard = document.createElement('div');
-      newCard.className = 'employee-rect';
-      newCard.innerHTML = `
-        <div class="employee-pic-box">
-          <img src="rajesh.jpg" alt="Worker">
-        </div>
-        <div class="employee-info">
-          <div><label>Name:</label> <span>${name}</span></div>
-          <div><label>Username ID:</label> <span>${username}</span></div>
-          <div><label>Device Code:</label> <span>${devCode}</span></div>
-        </div>
-      `;
-      list.appendChild(newCard);
+      const choice = prompt("Enter 1 to upload an image file from device, or 2 to paste an Image URL:", "1");
+      
+      if (choice === "1") {
+        const fileInput = document.getElementById('imageFileInput');
+        fileInput.value = '';
+        fileInput.onchange = function(e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+              saveNewEmployee(name, username, event.target.result);
+            };
+            reader.readAsDataURL(file);
+          } else {
+            saveNewEmployee(name, username, 'https://via.placeholder.com/90?text=User');
+          }
+        };
+        fileInput.click();
+      } else if (choice === "2") {
+        const imageUrl = prompt("Paste image URL:");
+        saveNewEmployee(name, username, imageUrl || 'https://via.placeholder.com/90?text=User');
+      } else {
+        saveNewEmployee(name, username, 'https://via.placeholder.com/90?text=User');
+      }
     }
 
-    // Taskbar: Remove Employee
+    function saveNewEmployee(name, username, image) {
+      const devCode = "DEV-" + Math.floor(1000 + Math.random() * 9000) + "-X";
+      const employees = getEmployees();
+      
+      employees.push({ name, username, devCode, image });
+      saveEmployees(employees);
+      renderEmployees();
+    }
+
     function removeEmployee() {
       const name = prompt("Enter the name of the worker to remove:");
       if (!name) return;
 
-      const cards = document.querySelectorAll('.employee-rect');
-      let found = false;
+      let employees = getEmployees();
+      const initialLength = employees.length;
 
-      cards.forEach(card => {
-        if (card.textContent.toLowerCase().includes(name.toLowerCase())) {
-          card.remove();
-          found = true;
-        }
-      });
+      employees = employees.filter(emp => !emp.name.toLowerCase().includes(name.toLowerCase()));
 
-      if (!found) {
+      if (employees.length < initialLength) {
+        saveEmployees(employees);
+        renderEmployees();
+      } else {
         alert("Worker not found.");
       }
     }
+
+    window.onload = function() {
+      renderEmployees();
+    };
   </script>
 </body>
 </html>
