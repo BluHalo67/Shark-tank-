@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -230,6 +230,7 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
+    /* Fixed Box Fit & Padding Settings */
     .employee-pic-box {
       width: 90px;
       height: 90px;
@@ -247,6 +248,13 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    /* Scaled styling when showing unknown icon fallback */
+    .employee-pic-box img.unknown-avatar {
+      object-fit: contain;
+      width: 65%;
+      height: 65%;
     }
 
     .employee-info {
@@ -504,8 +512,9 @@
     ];
 
     // Embedded SVG silhouette for unknown user
-    const UNKNOWN_USER_ICON = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2364748b"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>`;
+    const UNKNOWN_USER_ICON = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2338bdf8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>`;
 
+    // Updated 'Hasan.jpg' with capital H
     const DEFAULT_EMPLOYEES = [
       { id: 1, name: "Rajesh Kumar", username: "rajesh_k99", devCode: "DEV-8821-X", image: "rajesh.jpg" },
       { id: 2, name: "Tariq Al Mansoor", username: "tariq_m01", devCode: "DEV-4109-A", image: "tariq.jpg" },
@@ -516,14 +525,15 @@
 
     /* --- INDEXEDDB STORAGE SYSTEM --- */
     let db;
-    const dbRequest = indexedDB.open("BlueHaloDB", 1);
+    const dbRequest = indexedDB.open("BlueHaloDB", 2); // Upgraded version to reset store structure
 
     dbRequest.onupgradeneeded = function(e) {
       db = e.target.result;
-      if (!db.objectStoreNames.contains("employees")) {
-        const store = db.createObjectStore("employees", { keyPath: "id", autoIncrement: true });
-        DEFAULT_EMPLOYEES.forEach(emp => store.add(emp));
+      if (db.objectStoreNames.contains("employees")) {
+        db.deleteObjectStore("employees");
       }
+      const store = db.createObjectStore("employees", { keyPath: "id", autoIncrement: true });
+      DEFAULT_EMPLOYEES.forEach(emp => store.add(emp));
     };
 
     dbRequest.onsuccess = function(e) {
@@ -538,6 +548,11 @@
       request.onsuccess = () => callback(request.result);
     }
 
+    function handleImageError(imgElement) {
+      imgElement.src = UNKNOWN_USER_ICON;
+      imgElement.classList.add('unknown-avatar');
+    }
+
     function renderEmployees() {
       if (!db) return;
       getAllEmployees(employees => {
@@ -547,11 +562,14 @@
         employees.forEach(emp => {
           const card = document.createElement('div');
           card.className = 'employee-rect';
-          const imgSrc = emp.image || UNKNOWN_USER_ICON;
           
+          const isUnknown = !emp.image || emp.image === UNKNOWN_USER_ICON;
+          const imgSrc = isUnknown ? UNKNOWN_USER_ICON : emp.image;
+          const avatarClass = isUnknown ? 'unknown-avatar' : '';
+
           card.innerHTML = `
             <div class="employee-pic-box">
-              <img src="${imgSrc}" alt="${emp.name}" onerror="this.src='${UNKNOWN_USER_ICON}'">
+              <img src="${imgSrc}" class="${avatarClass}" alt="${emp.name}" onerror="handleImageError(this)">
             </div>
             <div class="employee-info">
               <div><label>Name:</label> <span>${emp.name}</span></div>
@@ -697,4 +715,3 @@
   </script>
 </body>
 </html>
-      
