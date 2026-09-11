@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -503,11 +503,14 @@
       "67sharktank@gmail.com"
     ];
 
+    // Embedded SVG silhouette for unknown user
+    const UNKNOWN_USER_ICON = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2364748b"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>`;
+
     const DEFAULT_EMPLOYEES = [
       { id: 1, name: "Rajesh Kumar", username: "rajesh_k99", devCode: "DEV-8821-X", image: "rajesh.jpg" },
       { id: 2, name: "Tariq Al Mansoor", username: "tariq_m01", devCode: "DEV-4109-A", image: "tariq.jpg" },
       { id: 3, name: "John David", username: "jdavid_site", devCode: "DEV-9032-B", image: "john.jpg" },
-      { id: 4, name: "Mohammad Hasan", username: "mhasan_ae", devCode: "DEV-1145-Z", image: "Hasan.jpg" },
+      { id: 4, name: "Mohammad Hasan", username: "mhasan_ae", devCode: "DEV-1145-Z", image: "hasan.jpg" },
       { id: 5, name: "Arun Joseph", username: "arun_j24", devCode: "DEV-7701-C", image: "arun.jpg" }
     ];
 
@@ -544,9 +547,11 @@
         employees.forEach(emp => {
           const card = document.createElement('div');
           card.className = 'employee-rect';
+          const imgSrc = emp.image || UNKNOWN_USER_ICON;
+          
           card.innerHTML = `
             <div class="employee-pic-box">
-              <img src="${emp.image}" alt="${emp.name}" onerror="this.src='https://via.placeholder.com/90?text=User'">
+              <img src="${imgSrc}" alt="${emp.name}" onerror="this.src='${UNKNOWN_USER_ICON}'">
             </div>
             <div class="employee-info">
               <div><label>Name:</label> <span>${emp.name}</span></div>
@@ -669,7 +674,7 @@
       } else if (urlInput) {
         addRecord(urlInput);
       } else {
-        addRecord('https://via.placeholder.com/90?text=User');
+        addRecord(UNKNOWN_USER_ICON);
       }
     }
 
@@ -692,3 +697,4 @@
   </script>
 </body>
 </html>
+      
