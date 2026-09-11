@@ -25,7 +25,7 @@
       font-family: Arial, sans-serif;
     }
 
-    /* Top Left Header Branding with Floating Glowing Halo */
+    /* Top Left Header Branding */
     .brand-container {
       position: fixed;
       top: 15px;
@@ -42,7 +42,6 @@
       padding-top: 12px;
     }
 
-    /* Custom CSS Oval Glowing Halo Ring */
     .halo-oval {
       position: absolute;
       top: 0;
@@ -86,7 +85,7 @@
       display: flex;
     }
 
-    /* Screen 1: Welcome Screen Fonts */
+    /* Screen 1: Welcome */
     .welcome-title {
       font-family: 'Bazooka', 'Impact', 'Arial Black', sans-serif;
       font-size: 3.8rem;
@@ -328,6 +327,56 @@
       background-color: #38bdf8;
       color: #0f172a;
     }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background-color: #1e293b;
+      border: 2px solid #38bdf8;
+      border-radius: 12px;
+      padding: 24px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .modal-card h3 {
+      color: #38bdf8;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .modal-actions button {
+      flex: 1;
+    }
+
+    .btn-cancel {
+      background-color: #64748b;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -340,9 +389,6 @@
     </div>
     <div class="brand-subtitle">By Aether Ltd.</div>
   </div>
-
-  <!-- Hidden File Input for Image Upload -->
-  <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
 
   <!-- Screen 1: Welcome -->
   <div id="welcomeScreen" class="screen active">
@@ -366,7 +412,7 @@
     <div class="content-card">
       <h2>Portal Login</h2>
       
-      <!-- Option 1: Google Sign In -->
+      <!-- Google Sign In -->
       <div class="google-btn-wrapper">
         <div id="g_id_onload"
              data-client_id="352439208859-osm3diqimkqk4fklu5eg89jrhlvq45lk.apps.googleusercontent.com"
@@ -385,7 +431,7 @@
 
       <div class="divider"><span>or sign in with credentials</span></div>
 
-      <!-- Option 2: Normal Form Login -->
+      <!-- Form Login -->
       <form id="loginForm">
         <div class="input-group">
           <label for="email">Authorized Email</label>
@@ -418,8 +464,35 @@
         <span style="color: #38bdf8;">🔍</span>
         <input type="text" id="searchInput" placeholder="Search..." onkeyup="filterEmployees()">
       </div>
-      <div class="taskbar-circle-btn" onclick="addEmployee()">+</div>
+      <div class="taskbar-circle-btn" onclick="openAddModal()">+</div>
       <div class="taskbar-circle-btn" onclick="removeEmployee()">−</div>
+    </div>
+  </div>
+
+  <!-- Add Worker Modal -->
+  <div id="addModal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>Add New Worker</h3>
+      <div class="input-group">
+        <label>Full Name</label>
+        <input type="text" id="modalName" placeholder="e.g. Alex Morgan">
+      </div>
+      <div class="input-group">
+        <label>Username ID</label>
+        <input type="text" id="modalUsername" placeholder="e.g. alex_m">
+      </div>
+      <div class="input-group">
+        <label>Upload Photo</label>
+        <input type="file" id="modalFile" accept="image/*">
+      </div>
+      <div class="input-group">
+        <label>Or Paste Photo URL</label>
+        <input type="text" id="modalUrl" placeholder="https://...">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-cancel" onclick="closeAddModal()">Cancel</button>
+        <button class="btn" onclick="saveNewEmployee()">Save</button>
+      </div>
     </div>
   </div>
 
@@ -431,44 +504,62 @@
     ];
 
     const DEFAULT_EMPLOYEES = [
-      { name: "Rajesh Kumar", username: "rajesh_k99", devCode: "DEV-8821-X", image: "rajesh.jpg" },
-      { name: "Tariq Al Mansoor", username: "tariq_m01", devCode: "DEV-4109-A", image: "tariq.jpg" },
-      { name: "John David", username: "jdavid_site", devCode: "DEV-9032-B", image: "john.jpg" },
-      { name: "Mohammad Hasan", username: "mhasan_ae", devCode: "DEV-1145-Z", image: "hasan.jpg" },
-      { name: "Arun Joseph", username: "arun_j24", devCode: "DEV-7701-C", image: "arun.jpg" }
+      { id: 1, name: "Rajesh Kumar", username: "rajesh_k99", devCode: "DEV-8821-X", image: "rajesh.jpg" },
+      { id: 2, name: "Tariq Al Mansoor", username: "tariq_m01", devCode: "DEV-4109-A", image: "tariq.jpg" },
+      { id: 3, name: "John David", username: "jdavid_site", devCode: "DEV-9032-B", image: "john.jpg" },
+      { id: 4, name: "Mohammad Hasan", username: "mhasan_ae", devCode: "DEV-1145-Z", image: "hasan.jpg" },
+      { id: 5, name: "Arun Joseph", username: "arun_j24", devCode: "DEV-7701-C", image: "arun.jpg" }
     ];
 
-    function getEmployees() {
-      const stored = localStorage.getItem('blue_halo_employees');
-      return stored ? JSON.parse(stored) : DEFAULT_EMPLOYEES;
-    }
+    /* --- INDEXEDDB STORAGE SYSTEM --- */
+    let db;
+    const dbRequest = indexedDB.open("BlueHaloDB", 1);
 
-    function saveEmployees(employees) {
-      localStorage.setItem('blue_halo_employees', JSON.stringify(employees));
+    dbRequest.onupgradeneeded = function(e) {
+      db = e.target.result;
+      if (!db.objectStoreNames.contains("employees")) {
+        const store = db.createObjectStore("employees", { keyPath: "id", autoIncrement: true });
+        DEFAULT_EMPLOYEES.forEach(emp => store.add(emp));
+      }
+    };
+
+    dbRequest.onsuccess = function(e) {
+      db = e.target.result;
+      renderEmployees();
+    };
+
+    function getAllEmployees(callback) {
+      const tx = db.transaction("employees", "readonly");
+      const store = tx.objectStore("employees");
+      const request = store.getAll();
+      request.onsuccess = () => callback(request.result);
     }
 
     function renderEmployees() {
-      const list = document.getElementById('employeeList');
-      const employees = getEmployees();
-      list.innerHTML = '';
+      if (!db) return;
+      getAllEmployees(employees => {
+        const list = document.getElementById('employeeList');
+        list.innerHTML = '';
 
-      employees.forEach(emp => {
-        const card = document.createElement('div');
-        card.className = 'employee-rect';
-        card.innerHTML = `
-          <div class="employee-pic-box">
-            <img src="${emp.image}" alt="${emp.name}" onerror="this.src='https://via.placeholder.com/90?text=User'">
-          </div>
-          <div class="employee-info">
-            <div><label>Name:</label> <span>${emp.name}</span></div>
-            <div><label>Username ID:</label> <span>${emp.username}</span></div>
-            <div><label>Device Code:</label> <span>${emp.devCode}</span></div>
-          </div>
-        `;
-        list.appendChild(card);
+        employees.forEach(emp => {
+          const card = document.createElement('div');
+          card.className = 'employee-rect';
+          card.innerHTML = `
+            <div class="employee-pic-box">
+              <img src="${emp.image}" alt="${emp.name}" onerror="this.src='https://via.placeholder.com/90?text=User'">
+            </div>
+            <div class="employee-info">
+              <div><label>Name:</label> <span>${emp.name}</span></div>
+              <div><label>Username ID:</label> <span>${emp.username}</span></div>
+              <div><label>Device Code:</label> <span>${emp.devCode}</span></div>
+            </div>
+          `;
+          list.appendChild(card);
+        });
       });
     }
 
+    /* --- NAVIGATION & AUTH --- */
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
@@ -525,6 +616,7 @@
       }
     });
 
+    /* --- SEARCH & TASKBAR ACTIONS --- */
     function filterEmployees() {
       const query = document.getElementById('searchInput').value.toLowerCase();
       const cards = document.querySelectorAll('.employee-rect');
@@ -535,68 +627,68 @@
       });
     }
 
-    function addEmployee() {
-      const name = prompt("Enter employee name:");
-      if (!name) return;
-
-      const username = prompt("Enter Username ID:", name.toLowerCase().replace(/\s+/g, '_') + '_id');
-      if (!username) return;
-
-      const choice = prompt("Enter 1 to upload an image file from device, or 2 to paste an Image URL:", "1");
-      
-      if (choice === "1") {
-        const fileInput = document.getElementById('imageFileInput');
-        fileInput.value = '';
-        fileInput.onchange = function(e) {
-          const file = e.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-              saveNewEmployee(name, username, event.target.result);
-            };
-            reader.readAsDataURL(file);
-          } else {
-            saveNewEmployee(name, username, 'https://via.placeholder.com/90?text=User');
-          }
-        };
-        fileInput.click();
-      } else if (choice === "2") {
-        const imageUrl = prompt("Paste image URL:");
-        saveNewEmployee(name, username, imageUrl || 'https://via.placeholder.com/90?text=User');
-      } else {
-        saveNewEmployee(name, username, 'https://via.placeholder.com/90?text=User');
-      }
+    function openAddModal() {
+      document.getElementById('modalName').value = '';
+      document.getElementById('modalUsername').value = '';
+      document.getElementById('modalFile').value = '';
+      document.getElementById('modalUrl').value = '';
+      document.getElementById('addModal').classList.add('active');
     }
 
-    function saveNewEmployee(name, username, image) {
+    function closeAddModal() {
+      document.getElementById('addModal').classList.remove('active');
+    }
+
+    function saveNewEmployee() {
+      const name = document.getElementById('modalName').value.trim();
+      const username = document.getElementById('modalUsername').value.trim();
+      const fileInput = document.getElementById('modalFile');
+      const urlInput = document.getElementById('modalUrl').value.trim();
+
+      if (!name || !username) {
+        alert("Please provide both a Name and Username ID.");
+        return;
+      }
+
       const devCode = "DEV-" + Math.floor(1000 + Math.random() * 9000) + "-X";
-      const employees = getEmployees();
-      
-      employees.push({ name, username, devCode, image });
-      saveEmployees(employees);
-      renderEmployees();
+
+      const addRecord = (imageData) => {
+        const tx = db.transaction("employees", "readwrite");
+        const store = tx.objectStore("employees");
+        store.add({ name, username, devCode, image: imageData });
+        tx.oncomplete = () => {
+          renderEmployees();
+          closeAddModal();
+        };
+      };
+
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => addRecord(e.target.result);
+        reader.readAsDataURL(fileInput.files[0]);
+      } else if (urlInput) {
+        addRecord(urlInput);
+      } else {
+        addRecord('https://via.placeholder.com/90?text=User');
+      }
     }
 
     function removeEmployee() {
-      const name = prompt("Enter the name of the worker to remove:");
+      const name = prompt("Enter the exact name of the worker to remove:");
       if (!name) return;
 
-      let employees = getEmployees();
-      const initialLength = employees.length;
-
-      employees = employees.filter(emp => !emp.name.toLowerCase().includes(name.toLowerCase()));
-
-      if (employees.length < initialLength) {
-        saveEmployees(employees);
-        renderEmployees();
-      } else {
-        alert("Worker not found.");
-      }
+      getAllEmployees(employees => {
+        const target = employees.find(emp => emp.name.toLowerCase().includes(name.toLowerCase()));
+        if (target) {
+          const tx = db.transaction("employees", "readwrite");
+          const store = tx.objectStore("employees");
+          store.delete(target.id);
+          tx.oncomplete = () => renderEmployees();
+        } else {
+          alert("Worker not found.");
+        }
+      });
     }
-
-    window.onload = function() {
-      renderEmployees();
-    };
   </script>
 </body>
 </html>
