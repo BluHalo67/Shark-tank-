@@ -226,8 +226,15 @@
       padding: 15px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 15px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .employee-left-section {
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
 
     /* Fixed Box Fit & Sizing Settings */
@@ -273,6 +280,29 @@
     .employee-info label {
       font-weight: bold;
       color: #38bdf8;
+    }
+
+    /* Danger Trigger Bell Button */
+    .alert-trigger-btn {
+      background-color: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+      flex-shrink: 0;
+      transition: transform 0.2s, background-color 0.2s;
+    }
+
+    .alert-trigger-btn:hover {
+      background-color: #dc2626;
+      transform: scale(1.08);
     }
 
     /* Floating Taskbar */
@@ -384,6 +414,58 @@
     .btn-cancel {
       background-color: #64748b;
       color: #fff;
+    }
+
+    /* Emergency Alert Modal & Animations */
+    @keyframes alertPulse {
+      0% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); border-color: #ef4444; }
+      50% { box-shadow: 0 0 40px rgba(239, 68, 68, 0.9); border-color: #f87171; }
+      100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); border-color: #ef4444; }
+    }
+
+    .emergency-card {
+      border: 3px solid #ef4444 !important;
+      animation: alertPulse 1.2s infinite;
+      text-align: center;
+    }
+
+    .emergency-title {
+      color: #ef4444 !important;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .emergency-pic-box {
+      width: 120px;
+      height: 120px;
+      margin: 15px auto;
+      border: 3px solid #ef4444;
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #0f172a;
+    }
+
+    .emergency-pic-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .emergency-details {
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    .emergency-details p {
+      margin-bottom: 6px;
+      color: #f8fafc;
     }
   </style>
 </head>
@@ -504,6 +586,27 @@
     </div>
   </div>
 
+  <!-- Emergency Alert Modal -->
+  <div id="emergencyModal" class="modal-overlay">
+    <div class="modal-card emergency-card">
+      <div class="emergency-title">⚠️ Danger Alert</div>
+      <p style="color: #94a3b8; font-size: 0.85rem;">WORKER IN NEED OF IMMEDIATE ASSISTANCE</p>
+      
+      <div class="emergency-pic-box">
+        <img id="alertPhoto" src="" alt="Worker Image">
+      </div>
+
+      <div class="emergency-details">
+        <p><strong>Name:</strong> <span id="alertName">--</span></p>
+        <p><strong>Username ID:</strong> <span id="alertUsername">--</span></p>
+        <p><strong>Device ID:</strong> <span id="alertDevCode">--</span></p>
+        <p><strong>Status:</strong> <span style="color: #ef4444; font-weight: bold;">SOS Triggered</span></p>
+      </div>
+
+      <button class="btn" style="background-color: #ef4444; color: #fff; width: 100%; border-radius: 6px;" onclick="dismissAlert()">Acknowledge & Silence</button>
+    </div>
+  </div>
+
   <script>
     const ALLOWED_EMAILS = [
       "ameenas310522@gmail.com",
@@ -511,7 +614,6 @@
       "67sharktank@gmail.com"
     ];
 
-    // Reference to default image file in your GitHub repository
     const UNKNOWN_USER_ICON = "default.png";
 
     const DEFAULT_EMPLOYEES = [
@@ -521,6 +623,52 @@
       { id: 4, name: "Mohammad Hasan", username: "mhasan_ae", devCode: "DEV-1145-Z", image: "Hasan.jpg" },
       { id: 5, name: "Arun Joseph", username: "arun_j24", devCode: "DEV-7701-C", image: "arun.jpg" }
     ];
+
+    /* --- AUDIO & ALARM SYNTHESIS --- */
+    let audioCtx = null;
+    let alarmInterval = null;
+
+    function startEmergencySound() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      // Generate a repeating two-tone siren sound via Web Audio API
+      alarmInterval = setInterval(() => {
+        if (!audioCtx) return;
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Pitch Tone 1
+        osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.25); // Pitch Tone 2
+        
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      }, 300);
+
+      // Trigger hardware vibration if mobile device supports it
+      if ("vibrate" in navigator) {
+        navigator.vibrate([400, 200, 400, 200, 400]);
+      }
+    }
+
+    function stopEmergencySound() {
+      if (alarmInterval) {
+        clearInterval(alarmInterval);
+        alarmInterval = null;
+      }
+      if ("vibrate" in navigator) {
+        navigator.vibrate(0);
+      }
+    }
 
     /* --- INDEXEDDB STORAGE SYSTEM --- */
     let db;
@@ -567,18 +715,45 @@
           const avatarClass = isUnknown ? 'unknown-avatar' : '';
 
           card.innerHTML = `
-            <div class="employee-pic-box">
-              <img src="${imgSrc}" class="${avatarClass}" alt="${emp.name}" onerror="handleImageError(this)">
+            <div class="employee-left-section">
+              <div class="employee-pic-box">
+                <img src="${imgSrc}" class="${avatarClass}" alt="${emp.name}" onerror="handleImageError(this)">
+              </div>
+              <div class="employee-info">
+                <div><label>Name:</label> <span>${emp.name}</span></div>
+                <div><label>Username ID:</label> <span>${emp.username}</span></div>
+                <div><label>Device Code:</label> <span>${emp.devCode}</span></div>
+              </div>
             </div>
-            <div class="employee-info">
-              <div><label>Name:</label> <span>${emp.name}</span></div>
-              <div><label>Username ID:</label> <span>${emp.username}</span></div>
-              <div><label>Device Code:</label> <span>${emp.devCode}</span></div>
-            </div>
+            <button class="alert-trigger-btn" onclick="triggerAlert(${emp.id})" title="Trigger Emergency Alert">🔔</button>
           `;
           list.appendChild(card);
         });
       });
+    }
+
+    /* --- DEMO EMERGENCY ALERT HANDLER --- */
+    function triggerAlert(employeeId) {
+      getAllEmployees(employees => {
+        const worker = employees.find(e => e.id === employeeId);
+        if (!worker) return;
+
+        document.getElementById('alertName').textContent = worker.name;
+        document.getElementById('alertUsername').textContent = worker.username;
+        document.getElementById('alertDevCode').textContent = worker.devCode;
+
+        const imgEl = document.getElementById('alertPhoto');
+        imgEl.src = worker.image || UNKNOWN_USER_ICON;
+        imgEl.onerror = function() { handleImageError(this); };
+
+        document.getElementById('emergencyModal').classList.add('active');
+        startEmergencySound();
+      });
+    }
+
+    function dismissAlert() {
+      stopEmergencySound();
+      document.getElementById('emergencyModal').classList.remove('active');
     }
 
     /* --- NAVIGATION & AUTH --- */
