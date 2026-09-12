@@ -624,7 +624,7 @@
       { id: 5, name: "Arun Joseph", username: "arun_j24", devCode: "DEV-7701-C", image: "arun.jpg" }
     ];
 
-    /* --- AUDIO & ALARM SYNTHESIS --- */
+    /* --- ENHANCED HIGH-INTENSITY SIREN AUDIO & ALARM SYNTHESIS --- */
     let audioCtx = null;
     let alarmInterval = null;
 
@@ -632,31 +632,55 @@
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
 
-      // Generate a repeating two-tone siren sound via Web Audio API
-      alarmInterval = setInterval(() => {
+      const triggerSirenPulse = () => {
         if (!audioCtx) return;
-        
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Pitch Tone 1
-        osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.25); // Pitch Tone 2
-        
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.25);
-      }, 300);
 
-      // Trigger hardware vibration if mobile device supports it
+        const now = audioCtx.currentTime;
+        const duration = 0.5; // Pulse length in seconds
+
+        // Dual oscillators for a loud, alarming emergency siren effect
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc1.type = 'sawtooth';
+        osc2.type = 'square';
+
+        // Frequency sweep for Osc 1 (Main Piercing Siren Frequency)
+        osc1.frequency.setValueAtTime(900, now);
+        osc1.frequency.linearRampToValueAtTime(1400, now + duration * 0.4);
+        osc1.frequency.linearRampToValueAtTime(900, now + duration);
+
+        // Frequency sweep for Osc 2 (Low Resonance Harmonic Tone)
+        osc2.frequency.setValueAtTime(450, now);
+        osc2.frequency.linearRampToValueAtTime(700, now + duration * 0.4);
+        osc2.frequency.linearRampToValueAtTime(450, now + duration);
+
+        // Loud volume envelope settings
+        gain.gain.setValueAtTime(0.7, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + duration - 0.02);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + duration);
+        osc2.stop(now + duration);
+      };
+
+      // Play immediate siren pulse then repeat every 550ms
+      triggerSirenPulse();
+      alarmInterval = setInterval(triggerSirenPulse, 550);
+
+      // Trigger high-intensity mobile vibration pattern
       if ("vibrate" in navigator) {
-        navigator.vibrate([400, 200, 400, 200, 400]);
+        navigator.vibrate([500, 100, 500, 100, 500, 100, 500]);
       }
     }
 
