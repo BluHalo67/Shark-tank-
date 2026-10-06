@@ -586,82 +586,68 @@
     </div>
   </div>
 
- /* --- SLOW WAILING AIR-RAID SIREN (1991 EAS STYLE) --- */
-    let audioCtx = null;
-    let sirenOsc1 = null;
-    let sirenOsc2 = null;
-    let sirenGain = null;
-    let isSirenRunning = false;
-    let cycleTimeout = null;
+  <!-- Emergency Alert Modal -->
+  <div id="emergencyModal" class="modal-overlay">
+    <div class="modal-card emergency-card">
+      <div class="emergency-title">⚠️ Danger Alert</div>
+      <p style="color: #94a3b8; font-size: 0.85rem;">WORKER IN NEED OF IMMEDIATE ASSISTANCE</p>
+      
+      <div class="emergency-pic-box">
+        <img id="alertPhoto" src="" alt="Worker Image">
+      </div>
 
-    function startEmergencySound() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
+      <div class="emergency-details">
+        <p><strong>Name:</strong> <span id="alertName">--</span></p>
+        <p><strong>Username ID:</strong> <span id="alertUsername">--</span></p>
+        <p><strong>Device ID:</strong> <span id="alertDevCode">--</span></p>
+        <p><strong>Status:</strong> <span style="color: #ef4444; font-weight: bold;">SOS Triggered</span></p>
+      </div>
 
-      if (isSirenRunning) return;
-      isSirenRunning = true;
+      <button class="btn" style="background-color: #ef4444; color: #fff; width: 100%; border-radius: 6px;" onclick="dismissAlert()">Acknowledge & Silence</button>
+    </div>
+  </div>
 
-      sirenOsc1 = audioCtx.createOscillator();
-      sirenOsc2 = audioCtx.createOscillator();
-      sirenGain = audioCtx.createGain();
+  <script>
+    const ALLOWED_EMAILS = [
+      "ameenas310522@gmail.com",
+      "lubna4b@gmail.com",
+      "67sharktank@gmail.com"
+    ];
 
-      sirenOsc1.type = 'sawtooth';
-      sirenOsc2.type = 'sawtooth';
+    const UNKNOWN_USER_ICON = "default.png";
 
-      sirenGain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+    const DEFAULT_EMPLOYEES = [
+      { id: 1, name: "Rajesh Kumar", username: "rajesh_k99", devCode: "DEV-8821-X", image: "rajesh.jpg" },
+      { id: 2, name: "Tariq Al Mansoor", username: "tariq_m01", devCode: "DEV-4109-A", image: "tariq.jpg" },
+      { id: 3, name: "John David", username: "jdavid_site", devCode: "DEV-9032-B", image: "john.jpg" },
+      { id: 4, name: "Mohammad Hasan", username: "mhasan_ae", devCode: "DEV-1145-Z", image: "Hasan.jpg" },
+      { id: 5, name: "Arun Joseph", username: "arun_j24", devCode: "DEV-7701-C", image: "arun.jpg" }
+    ];
 
-      sirenOsc1.connect(sirenGain);
-      sirenOsc2.connect(sirenGain);
-      sirenGain.connect(audioCtx.destination);
+/* --- CUSTOM AUDIO FILE PLAYER --- */
+const emergencyAudio = new Audio('alert.ogg'); 
+emergencyAudio.loop = true; // Loops the audio until acknowledged
 
-      sirenOsc1.start();
-      sirenOsc2.start();
+function startEmergencySound() {
+  emergencyAudio.currentTime = 0; // Starts from the beginning
+  emergencyAudio.play().catch(error => {
+    console.log("Audio playback blocked by browser settings:", error);
+  });
 
-      const cycleSiren = () => {
-        if (!isSirenRunning || !audioCtx) return;
+  if ("vibrate" in navigator) {
+    navigator.vibrate([1000, 500, 1000, 500]);
+  }
+}
 
-        const now = audioCtx.currentTime;
-        const riseTime = 4.0;
-        const fallTime = 4.0;
+function stopEmergencySound() {
+  emergencyAudio.pause();
+  emergencyAudio.currentTime = 0;
 
-        sirenOsc1.frequency.cancelScheduledValues(now);
-        sirenOsc1.frequency.setValueAtTime(sirenOsc1.frequency.value || 300, now);
-        sirenOsc1.frequency.exponentialRampToValueAtTime(750, now + riseTime);
-        sirenOsc1.frequency.exponentialRampToValueAtTime(300, now + riseTime + fallTime);
+  if ("vibrate" in navigator) {
+    navigator.vibrate(0);
+  }
+}
 
-        sirenOsc2.frequency.cancelScheduledValues(now);
-        sirenOsc2.frequency.setValueAtTime(sirenOsc2.frequency.value || 360, now);
-        sirenOsc2.frequency.exponentialRampToValueAtTime(900, now + riseTime);
-        sirenOsc2.frequency.exponentialRampToValueAtTime(360, now + riseTime + fallTime);
-
-        cycleTimeout = setTimeout(cycleSiren, (riseTime + fallTime) * 1000);
-      };
-
-      cycleSiren();
-
-      if ("vibrate" in navigator) {
-        navigator.vibrate([1000, 500, 1000, 500]);
-      }
-    }
-
-    function stopEmergencySound() {
-      isSirenRunning = false;
-      if (cycleTimeout) {
-        clearTimeout(cycleTimeout);
-        cycleTimeout = null;
-      }
-      if (sirenGain && audioCtx) {
-        sirenGain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        setTimeout(() => {
-          if (sirenOsc1) { sirenOsc1.stop(); sirenOsc1.disconnect(); sirenOsc1 = null; }
-          if (sirenOsc2) { sirenOsc2.stop(); sirenOsc2.disconnect(); sirenOsc2 = null; }
-        }, 300);
-      }
-    }
     /* --- INDEXEDDB STORAGE SYSTEM --- */
     let db;
     const dbRequest = indexedDB.open("BlueHaloDB", 3);
