@@ -624,7 +624,7 @@
       { id: 5, name: "Arun Joseph", username: "arun_j24", devCode: "DEV-7701-C", image: "arun.jpg" }
     ];
 
-    /* --- 1991 IRAQI EAS STYLE AUDIO SYNTHESIS --- */
+    /* --- ENHANCED HIGH-INTENSITY SIREN AUDIO & ALARM SYNTHESIS --- */
     let audioCtx = null;
     let alarmInterval = null;
 
@@ -636,28 +636,33 @@
         audioCtx.resume();
       }
 
-      const triggerEASPulse = () => {
+      const triggerSirenPulse = () => {
         if (!audioCtx) return;
 
         const now = audioCtx.currentTime;
-        const duration = 0.6; // Pulse length in seconds
+        const duration = 0.5; // Pulse length in seconds
 
-        // Dual square-wave oscillators for the low, clashing buzz
+        // Dual oscillators for a loud, alarming emergency siren effect
         const osc1 = audioCtx.createOscillator();
         const osc2 = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
 
-        osc1.type = 'square';
+        osc1.type = 'sawtooth';
         osc2.type = 'square';
 
-        // Dissonant low frequencies (A4 and A#4)
-        osc1.frequency.setValueAtTime(440, now);  
-        osc2.frequency.setValueAtTime(466.16, now); // Sharp clash creates the beating buzz
+        // Frequency sweep for Osc 1 (Main Piercing Siren Frequency)
+        osc1.frequency.setValueAtTime(900, now);
+        osc1.frequency.linearRampToValueAtTime(1400, now + duration * 0.4);
+        osc1.frequency.linearRampToValueAtTime(900, now + duration);
 
-        // Hard-edged volume envelope
-        gain.gain.setValueAtTime(0.85, now);
-        gain.gain.setValueAtTime(0.85, now + duration - 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        // Frequency sweep for Osc 2 (Low Resonance Harmonic Tone)
+        osc2.frequency.setValueAtTime(450, now);
+        osc2.frequency.linearRampToValueAtTime(700, now + duration * 0.4);
+        osc2.frequency.linearRampToValueAtTime(450, now + duration);
+
+        // Loud volume envelope settings
+        gain.gain.setValueAtTime(0.7, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + duration - 0.02);
 
         osc1.connect(gain);
         osc2.connect(gain);
@@ -669,13 +674,13 @@
         osc2.stop(now + duration);
       };
 
-      // Play immediate pulse then repeat every 800ms
-      triggerEASPulse();
-      alarmInterval = setInterval(triggerEASPulse, 800);
+      // Play immediate siren pulse then repeat every 550ms
+      triggerSirenPulse();
+      alarmInterval = setInterval(triggerSirenPulse, 550);
 
       // Trigger high-intensity mobile vibration pattern
       if ("vibrate" in navigator) {
-        navigator.vibrate([600, 200, 600, 200, 600]);
+        navigator.vibrate([500, 100, 500, 100, 500, 100, 500]);
       }
     }
 
@@ -736,7 +741,7 @@
           card.innerHTML = `
             <div class="employee-left-section">
               <div class="employee-pic-box">
-                <img src="\({imgSrc}" class="\){avatarClass}" alt="${emp.name}" onerror="handleImageError(this)">
+                <img src="${imgSrc}" class="${avatarClass}" alt="${emp.name}" onerror="handleImageError(this)">
               </div>
               <div class="employee-info">
                 <div><label>Name:</label> <span>${emp.name}</span></div>
