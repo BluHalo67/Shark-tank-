@@ -471,6 +471,9 @@
 </head>
 <body>
 
+  <!-- Audio Element for alert sound file from GitHub root directory -->
+  <audio id="alertAudio" src="alert.ogg" preload="auto" loop></audio>
+
   <!-- Persistent Brand Header -->
   <div class="brand-container">
     <div class="brand-wrapper">
@@ -624,29 +627,30 @@
       { id: 5, name: "Arun Joseph", username: "arun_j24", devCode: "DEV-7701-C", image: "arun.jpg" }
     ];
 
-/* --- CUSTOM AUDIO FILE PLAYER --- */
-const emergencyAudio = new Audio('alert.ogg'); 
-emergencyAudio.loop = true; // Loops the audio until acknowledged
+    /* --- DIRECT GITHUB FILE AUDIO PLAYER --- */
+    function startEmergencySound() {
+      const audio = document.getElementById('alertAudio');
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(err => console.log("Audio play blocked by browser policy:", err));
+      }
 
-function startEmergencySound() {
-  emergencyAudio.currentTime = 0; // Starts from the beginning
-  emergencyAudio.play().catch(error => {
-    console.log("Audio playback blocked by browser settings:", error);
-  });
+      // Trigger mobile vibration pattern if supported
+      if ("vibrate" in navigator) {
+        navigator.vibrate([500, 100, 500, 100, 500, 100, 500]);
+      }
+    }
 
-  if ("vibrate" in navigator) {
-    navigator.vibrate([1000, 500, 1000, 500]);
-  }
-}
-
-function stopEmergencySound() {
-  emergencyAudio.pause();
-  emergencyAudio.currentTime = 0;
-
-  if ("vibrate" in navigator) {
-    navigator.vibrate(0);
-  }
-}
+    function stopEmergencySound() {
+      const audio = document.getElementById('alertAudio');
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+      if ("vibrate" in navigator) {
+        navigator.vibrate(0);
+      }
+    }
 
     /* --- INDEXEDDB STORAGE SYSTEM --- */
     let db;
@@ -710,7 +714,7 @@ function stopEmergencySound() {
       });
     }
 
-    /* --- DEMO EMERGENCY ALERT HANDLER --- */
+    /* --- EMERGENCY ALERT HANDLER --- */
     function triggerAlert(employeeId) {
       getAllEmployees(employees => {
         const worker = employees.find(e => e.id === employeeId);
