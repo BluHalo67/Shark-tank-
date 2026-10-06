@@ -586,47 +586,13 @@
     </div>
   </div>
 
-  <!-- Emergency Alert Modal -->
-  <div id="emergencyModal" class="modal-overlay">
-    <div class="modal-card emergency-card">
-      <div class="emergency-title">⚠️ Danger Alert</div>
-      <p style="color: #94a3b8; font-size: 0.85rem;">WORKER IN NEED OF IMMEDIATE ASSISTANCE</p>
-      
-      <div class="emergency-pic-box">
-        <img id="alertPhoto" src="" alt="Worker Image">
-      </div>
-
-      <div class="emergency-details">
-        <p><strong>Name:</strong> <span id="alertName">--</span></p>
-        <p><strong>Username ID:</strong> <span id="alertUsername">--</span></p>
-        <p><strong>Device ID:</strong> <span id="alertDevCode">--</span></p>
-        <p><strong>Status:</strong> <span style="color: #ef4444; font-weight: bold;">SOS Triggered</span></p>
-      </div>
-
-      <button class="btn" style="background-color: #ef4444; color: #fff; width: 100%; border-radius: 6px;" onclick="dismissAlert()">Acknowledge & Silence</button>
-    </div>
-  </div>
-
-  <script>
-    const ALLOWED_EMAILS = [
-      "ameenas310522@gmail.com",
-      "lubna4b@gmail.com",
-      "67sharktank@gmail.com"
-    ];
-
-    const UNKNOWN_USER_ICON = "default.png";
-
-    const DEFAULT_EMPLOYEES = [
-      { id: 1, name: "Rajesh Kumar", username: "rajesh_k99", devCode: "DEV-8821-X", image: "rajesh.jpg" },
-      { id: 2, name: "Tariq Al Mansoor", username: "tariq_m01", devCode: "DEV-4109-A", image: "tariq.jpg" },
-      { id: 3, name: "John David", username: "jdavid_site", devCode: "DEV-9032-B", image: "john.jpg" },
-      { id: 4, name: "Mohammad Hasan", username: "mhasan_ae", devCode: "DEV-1145-Z", image: "Hasan.jpg" },
-      { id: 5, name: "Arun Joseph", username: "arun_j24", devCode: "DEV-7701-C", image: "arun.jpg" }
-    ];
-
-    /* --- ENHANCED HIGH-INTENSITY SIREN AUDIO & ALARM SYNTHESIS --- */
+ /* --- SLOW WAILING AIR-RAID SIREN (1991 EAS STYLE) --- */
     let audioCtx = null;
-    let alarmInterval = null;
+    let sirenOsc1 = null;
+    let sirenOsc2 = null;
+    let sirenGain = null;
+    let isSirenRunning = false;
+    let cycleTimeout = null;
 
     function startEmergencySound() {
       if (!audioCtx) {
@@ -636,64 +602,66 @@
         audioCtx.resume();
       }
 
-      const triggerSirenPulse = () => {
-        if (!audioCtx) return;
+      if (isSirenRunning) return;
+      isSirenRunning = true;
+
+      sirenOsc1 = audioCtx.createOscillator();
+      sirenOsc2 = audioCtx.createOscillator();
+      sirenGain = audioCtx.createGain();
+
+      sirenOsc1.type = 'sawtooth';
+      sirenOsc2.type = 'sawtooth';
+
+      sirenGain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+
+      sirenOsc1.connect(sirenGain);
+      sirenOsc2.connect(sirenGain);
+      sirenGain.connect(audioCtx.destination);
+
+      sirenOsc1.start();
+      sirenOsc2.start();
+
+      const cycleSiren = () => {
+        if (!isSirenRunning || !audioCtx) return;
 
         const now = audioCtx.currentTime;
-        const duration = 0.5; // Pulse length in seconds
+        const riseTime = 4.0;
+        const fallTime = 4.0;
 
-        // Dual oscillators for a loud, alarming emergency siren effect
-        const osc1 = audioCtx.createOscillator();
-        const osc2 = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        sirenOsc1.frequency.cancelScheduledValues(now);
+        sirenOsc1.frequency.setValueAtTime(sirenOsc1.frequency.value || 300, now);
+        sirenOsc1.frequency.exponentialRampToValueAtTime(750, now + riseTime);
+        sirenOsc1.frequency.exponentialRampToValueAtTime(300, now + riseTime + fallTime);
 
-        osc1.type = 'sawtooth';
-        osc2.type = 'square';
+        sirenOsc2.frequency.cancelScheduledValues(now);
+        sirenOsc2.frequency.setValueAtTime(sirenOsc2.frequency.value || 360, now);
+        sirenOsc2.frequency.exponentialRampToValueAtTime(900, now + riseTime);
+        sirenOsc2.frequency.exponentialRampToValueAtTime(360, now + riseTime + fallTime);
 
-        // Frequency sweep for Osc 1 (Main Piercing Siren Frequency)
-        osc1.frequency.setValueAtTime(900, now);
-        osc1.frequency.linearRampToValueAtTime(1400, now + duration * 0.4);
-        osc1.frequency.linearRampToValueAtTime(900, now + duration);
-
-        // Frequency sweep for Osc 2 (Low Resonance Harmonic Tone)
-        osc2.frequency.setValueAtTime(450, now);
-        osc2.frequency.linearRampToValueAtTime(700, now + duration * 0.4);
-        osc2.frequency.linearRampToValueAtTime(450, now + duration);
-
-        // Loud volume envelope settings
-        gain.gain.setValueAtTime(0.7, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + duration - 0.02);
-
-        osc1.connect(gain);
-        osc2.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc1.start(now);
-        osc2.start(now);
-        osc1.stop(now + duration);
-        osc2.stop(now + duration);
+        cycleTimeout = setTimeout(cycleSiren, (riseTime + fallTime) * 1000);
       };
 
-      // Play immediate siren pulse then repeat every 550ms
-      triggerSirenPulse();
-      alarmInterval = setInterval(triggerSirenPulse, 550);
+      cycleSiren();
 
-      // Trigger high-intensity mobile vibration pattern
       if ("vibrate" in navigator) {
-        navigator.vibrate([500, 100, 500, 100, 500, 100, 500]);
+        navigator.vibrate([1000, 500, 1000, 500]);
       }
     }
 
     function stopEmergencySound() {
-      if (alarmInterval) {
-        clearInterval(alarmInterval);
-        alarmInterval = null;
+      isSirenRunning = false;
+      if (cycleTimeout) {
+        clearTimeout(cycleTimeout);
+        cycleTimeout = null;
       }
-      if ("vibrate" in navigator) {
-        navigator.vibrate(0);
+      if (sirenGain && audioCtx) {
+        sirenGain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        setTimeout(() => {
+          if (sirenOsc1) { sirenOsc1.stop(); sirenOsc1.disconnect(); sirenOsc1 = null; }
+          if (sirenOsc2) { sirenOsc2.stop(); sirenOsc2.disconnect(); sirenOsc2 = null; }
+        }, 300);
       }
     }
-
     /* --- INDEXEDDB STORAGE SYSTEM --- */
     let db;
     const dbRequest = indexedDB.open("BlueHaloDB", 3);
